@@ -1,0 +1,5 @@
+channels==4.0.0
+Django==4.2.3
+django-cors-headers==4.1.0
+djangorestframework==3.14.0
+nsepython==0.0.973
