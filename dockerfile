@@ -84,5 +84,5 @@ RUN pip install -r /ds/requirements.txt --no-cache-dir
 
 # CMD ["python3","manage.py","runserver","0.0.0.0:8000"]
 # CMD ["gunicorn","stock.wsgi:application","--bind", "0.0.0.0:8000"]
-CMD ["gunicorn", "stock.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4"]
+# CMD ["gunicorn", "stock.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4"]
 # CMD ["gunicorn", "stock.wsgi:application", "--bind", "0.0.0.0:8000", "--access-logfile", "/access.log", "--error-logfile", "/error.log"]
