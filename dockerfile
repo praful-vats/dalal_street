@@ -67,14 +67,22 @@
 
 
 
-FROM python:3.11.4-slim-bookworm
+FROM python:3.11.4-slim-buster
 
 WORKDIR /ds
 COPY . /dalal ./
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
 RUN pip install --upgrade pip --no-cache-dir
 
 RUN pip install -r /ds/requirements.txt --no-cache-dir
 
+# COPY . /dalal ./
+# RUN touch /access.log /error.log
+
 # CMD ["python3","manage.py","runserver","0.0.0.0:8000"]
-CMD ["gunicorn","stock.wsgi:application","--bind", "0.0.0.0:8000"]
+# CMD ["gunicorn","stock.wsgi:application","--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "stock.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4"]
+# CMD ["gunicorn", "stock.wsgi:application", "--bind", "0.0.0.0:8000", "--access-logfile", "/access.log", "--error-logfile", "/error.log"]
