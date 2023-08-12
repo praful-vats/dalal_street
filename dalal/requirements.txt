@@ -6,3 +6,4 @@ nsepython==0.0.973
 python-decouple==3.8
 gunicorn==21.2.0
 psycopg2-binary==2.9.7
+yfinance==0.2.27
