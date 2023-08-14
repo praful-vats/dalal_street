@@ -6,6 +6,10 @@ services:
     command: gunicorn stock.wsgi:application --bind 0.0.0.0:8000
     env_file:
       - ./dalal/.env
+    environment:
+      # - HTTP_PROXY=http://django_app:8000
+      # - HTTPS_PROXY=https://django_app:8000
+      - NO_PROXY=localhost,127.0.0.1
     volumes:
       - static_vol:/ds/dalal/static
       - media_vol:/ds/dalal/static/media
@@ -14,6 +18,10 @@ services:
 
   nginx:
     build: ./nginx
+    environment:
+      # - HTTP_PROXY=http://django_app:8000
+      # - HTTPS_PROXY=https://django_app:8000
+      - NO_PROXY=localhost,127.0.0.1
     volumes:
       - static_vol:/ds/dalal/static
       - media_vol:/ds/dalal/static/media

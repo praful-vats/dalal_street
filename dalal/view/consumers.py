@@ -34,4 +34,4 @@ class StockConsumer(AsyncWebsocketConsumer):
                 await self.send(text_data=json.dumps(stock_price))
             except Exception as e:
                 print(f"Error fetching data for {symbol}: {str(e)}")
-            await asyncio.sleep(60)
+            await asyncio.sleep(600)

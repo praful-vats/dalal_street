@@ -65,24 +65,49 @@ function View() {
     fetchData();
   }, [symbols]);
 
+  // useEffect(() => {
+  //   let sockets = [];
+  //   if (stockData.length) {
+  //     stockData.forEach(data => {
+  //       console.log(data.symbol);
+  //       const isSecureConnection = /^https:/.test(window.location.protocol);
+  //       const protocol = isSecureConnection ? "wss" : "ws";
+  //       const socket = new WebSocket(`${protocol}://${window.location.host}/ws/stock/${data.symbol}/`);
+  //       // const socket = new WebSocket(`ws://127.0.0.1:8000/ws/stock/${data.symbol}/`);
+  //       socket.onmessage = event => {
+  //         const updatedData = JSON.parse(event.data);
+  //         setStockData(prevData => prevData.map(item => (item.symbol === updatedData.symbol ? updatedData : item)));
+  //       };
+  //       sockets.push(socket);
+  //     });
+  //   }
+  //   return () => {
+  //     sockets.forEach(socket => socket.close());
+  //   };
+  // }, [stockData]);
+
   useEffect(() => {
-    let sockets = [];
-    if (stockData.length) {
-      stockData.forEach(data => {
-        console.log(data.symbol);
-        const isSecureConnection = /^https:/.test(window.location.protocol);
-        const protocol = isSecureConnection ? "wss" : "ws";
-        const socket = new WebSocket(`${protocol}://${window.location.host}/ws/stock/${data.symbol}/`);
-        // const socket = new WebSocket(`ws://127.0.0.1:8000/ws/stock/${data.symbol}/`);
-        socket.onmessage = event => {
-          const updatedData = JSON.parse(event.data);
-          setStockData(prevData => prevData.map(item => (item.symbol === updatedData.symbol ? updatedData : item)));
-        };
-        sockets.push(socket);
-      });
-    }
+    // Close previous WebSocket connections
+    socketRefs.current.forEach(socket => socket.close());
+
+    // Establish new WebSocket connections
+    const newSockets = stockData.map(data => {
+      const isSecureConnection = /^https:/.test(window.location.protocol);
+      const protocol = isSecureConnection ? "wss" : "ws";
+      const socket = new WebSocket(`${protocol}://${window.location.host}/ws/stock/${data.symbol}/`);
+      socket.onmessage = event => {
+        const updatedData = JSON.parse(event.data);
+        setStockData(prevData => prevData.map(item => (item.symbol === updatedData.symbol ? updatedData : item)));
+      };
+      return socket;
+    });
+
+    // Update socketRefs with new WebSocket connections
+    socketRefs.current = newSockets;
+
     return () => {
-      sockets.forEach(socket => socket.close());
+      // Clean up WebSocket connections on component unmount
+      socketRefs.current.forEach(socket => socket.close());
     };
   }, [stockData]);
 
