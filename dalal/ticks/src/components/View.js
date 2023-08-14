@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import DisplayStockData from './Stock';
 import './Stock.css'
 import mid from '../mid.png';
 import dim from '../dim.png';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function View() {
   const [symbols, setSymbols] = useState([]);
   const [stockData, setStockData] = useState([]);
+  const socketRefs = useRef([]);
 
   const [nseStocks, setNseStocks] = useState([
     { symbol: "AAPL" }, { symbol: "ABNB" }, { symbol: "ADBE" }, { symbol: "ADI" }, { symbol: "ADP" }, { symbol: "AEP" }, { symbol: "ALGN" }, { symbol: "AMAT" }, { symbol: "AMD" }, { symbol: "AMGN" }, { symbol: "ANSS" }, { symbol: "ASML" }, { symbol: "AVGO" }, { symbol: "AZN" }, { symbol: "BIIB" }, { symbol: "BKNG" }, { symbol: "BKR" }, { symbol: "CDNS" }, { symbol: "CEG" }, { symbol: "CHTR" }, { symbol: "CMCSA" }, { symbol: "COST" }, { symbol: "CPRT" }, { symbol: "CRWD" }, { symbol: "CSCO" }, { symbol: "CSGP" }, { symbol: "CSX" }, { symbol: "CTAS" }, { symbol: "CTSH" }, { symbol: "DDOG" }, { symbol: "DLTR" }, { symbol: "DXCM" }, { symbol: "EA" }, { symbol: "EBAY" }, { symbol: "ENPH" }, { symbol: "EXC" }, { symbol: "FANG" }, { symbol: "FAST" }, { symbol: "FTNT" }, { symbol: "GFS" }, { symbol: "GILD" }, { symbol: "GOOG" }, { symbol: "GOOGL" }, { symbol: "HON" }, { symbol: "IDXX" }, { symbol: "ILMN" }, { symbol: "ISRG" }, { symbol: "JD" }, { symbol: "KDP" }, { symbol: "KHC" }, { symbol: "KLAC" }, { symbol: "LCID" }, { symbol: "LRCX" }, { symbol: "MAR" }, { symbol: "MCHP" }, { symbol: "MDLZ" }, { symbol: "MELI" }, { symbol: "META" }, { symbol: "MNST" }, { symbol: "MRNA" }, { symbol: "MRVL" }, { symbol: "MU" }, { symbol: "NFLX" }, { symbol: "NXPI" }, { symbol: "ODFL" }, { symbol: "ON" }, { symbol: "ORLY" }, { symbol: "PANW" }, { symbol: "PAYX" }, { symbol: "PCAR" }, { symbol: "PDD" }, { symbol: "PEP" }, { symbol: "PYPL" }, { symbol: "QCOM" }, { symbol: "REGN" }, { symbol: "ROST" }, { symbol: "SBUX" }, { symbol: "SGEN" }, { symbol: "SIRI" }, { symbol: "SNPS" }, { symbol: "TEAM" }, { symbol: "TMUS" }, { symbol: "TSLA" }, { symbol: "TTD" }, { symbol: "TXN" }, { symbol: "VRSK" }, { symbol: "VRTX" }, { symbol: "WBA" }, { symbol: "WBD" }, { symbol: "WDAY" }, { symbol: "XEL" }, { symbol: "ZM" }, { symbol: "ZS" }
@@ -18,12 +21,12 @@ function View() {
     const response = await fetch(`/api/${symbol}/`);
     const data = await response.json();
     if (data.hasOwnProperty("error")) {
-      alert(data.error);
+      toast.error(data.error);
       return;
     }
     setSymbols([...symbols, symbol]);
   } else {
-    alert("Symbol already entered or maximum limit reached (9)");
+    toast.error("Symbol already entered or maximum limit reached (9)");
   }
 };
 
@@ -65,51 +68,51 @@ function View() {
     fetchData();
   }, [symbols]);
 
-  // useEffect(() => {
-  //   let sockets = [];
-  //   if (stockData.length) {
-  //     stockData.forEach(data => {
-  //       console.log(data.symbol);
-  //       const isSecureConnection = /^https:/.test(window.location.protocol);
-  //       const protocol = isSecureConnection ? "wss" : "ws";
-  //       const socket = new WebSocket(`${protocol}://${window.location.host}/ws/stock/${data.symbol}/`);
-  //       // const socket = new WebSocket(`ws://127.0.0.1:8000/ws/stock/${data.symbol}/`);
-  //       socket.onmessage = event => {
-  //         const updatedData = JSON.parse(event.data);
-  //         setStockData(prevData => prevData.map(item => (item.symbol === updatedData.symbol ? updatedData : item)));
-  //       };
-  //       sockets.push(socket);
-  //     });
-  //   }
-  //   return () => {
-  //     sockets.forEach(socket => socket.close());
-  //   };
-  // }, [stockData]);
-
   useEffect(() => {
-    // Close previous WebSocket connections
-    socketRefs.current.forEach(socket => socket.close());
-
-    // Establish new WebSocket connections
-    const newSockets = stockData.map(data => {
-      const isSecureConnection = /^https:/.test(window.location.protocol);
-      const protocol = isSecureConnection ? "wss" : "ws";
-      const socket = new WebSocket(`${protocol}://${window.location.host}/ws/stock/${data.symbol}/`);
-      socket.onmessage = event => {
-        const updatedData = JSON.parse(event.data);
-        setStockData(prevData => prevData.map(item => (item.symbol === updatedData.symbol ? updatedData : item)));
-      };
-      return socket;
-    });
-
-    // Update socketRefs with new WebSocket connections
-    socketRefs.current = newSockets;
-
+    let sockets = [];
+    if (stockData.length) {
+      stockData.forEach(data => {
+        console.log(data.symbol);
+        const isSecureConnection = /^https:/.test(window.location.protocol);
+        const protocol = isSecureConnection ? "wss" : "ws";
+        const socket = new WebSocket(`${protocol}://${window.location.host}/ws/stock/${data.symbol}/`);
+        // const socket = new WebSocket(`ws://127.0.0.1:8000/ws/stock/${data.symbol}/`);
+        socket.onmessage = event => {
+          const updatedData = JSON.parse(event.data);
+          setStockData(prevData => prevData.map(item => (item.symbol === updatedData.symbol ? updatedData : item)));
+        };
+        sockets.push(socket);
+      });
+    }
     return () => {
-      // Clean up WebSocket connections on component unmount
-      socketRefs.current.forEach(socket => socket.close());
+      sockets.forEach(socket => socket.close());
     };
   }, [stockData]);
+
+  // useEffect(() => {
+  //   // Close previous WebSocket connections
+  //   socketRefs.current.forEach(socket => socket.close());
+
+  //   // Establish new WebSocket connections
+  //   const newSockets = stockData.map(data => {
+  //     const isSecureConnection = /^https:/.test(window.location.protocol);
+  //     const protocol = isSecureConnection ? "wss" : "ws";
+  //     const socket = new WebSocket(`${protocol}://${window.location.host}/ws/stock/${data.symbol}/`);
+  //     socket.onmessage = event => {
+  //       const updatedData = JSON.parse(event.data);
+  //       setStockData(prevData => prevData.map(item => (item.symbol === updatedData.symbol ? updatedData : item)));
+  //     };
+  //     return socket;
+  //   });
+
+  //   // Update socketRefs with new WebSocket connections
+  //   socketRefs.current = newSockets;
+
+  //   return () => {
+  //     // Clean up WebSocket connections on component unmount
+  //     socketRefs.current.forEach(socket => socket.close());
+  //   };
+  // }, [stockData]);
 
   return (
     <div className='f19'>

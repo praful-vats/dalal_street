@@ -143,6 +143,35 @@ from .models import Stock
 from .serializers import StockSerializer
 import yfinance as yf
 
+# @api_view(['GET'])
+# def index(request, symbol):
+#     if symbol == '':
+#         return Response({'error': 'Symbol parameter is missing'})
+#     else:
+#         try:
+#             # Retrieve stock data using yfinance
+#             stock_data = yf.Ticker(symbol)
+#             stock_info = stock_data.info
+            
+#             # Create a Stock object and save it to the database
+#             stock = Stock(
+#                 symbol=symbol,
+#                 price=stock_info.get('last_price', 0),  # Replace 'last_price' with the correct key from yfinance data
+#                 change=stock_info.get('change', 0),      # Replace 'change' with the correct key from yfinance data
+#                 pChange=stock_info.get('pChange', 0)     # Replace 'pChange' with the correct key from yfinance data
+#             )
+#             stock.save()
+            
+#             # Serialize the stock data and return the response
+#             serializer = StockSerializer(stock)
+#             data = serializer.data
+#             return Response(data)
+
+#         except Exception as e:
+#             return Response({'error': str(e)})
+
+
+
 @api_view(['GET'])
 def index(request, symbol):
     if symbol == '':
@@ -156,9 +185,9 @@ def index(request, symbol):
             # Create a Stock object and save it to the database
             stock = Stock(
                 symbol=symbol,
-                price=stock_info.get('last_price', 0),  # Replace 'last_price' with the correct key from yfinance data
-                change=stock_info.get('change', 0),      # Replace 'change' with the correct key from yfinance data
-                pChange=stock_info.get('pChange', 0)     # Replace 'pChange' with the correct key from yfinance data
+                price=stock_info.get('currentPrice', 0),
+                change=stock_info.get('regularMarketPreviousClose', 0) - stock_info.get('open', 0),
+                pChange=(stock_info.get('currentPrice', 0) - stock_info.get('regularMarketPreviousClose', 0)) / stock_info.get('regularMarketPreviousClose', 1)
             )
             stock.save()
             
@@ -172,3 +201,20 @@ def index(request, symbol):
 
 
 
+
+# from django.shortcuts import render
+# from django.http import JsonResponse
+# from asgiref.sync import async_to_sync
+# from channels.layers import get_channel_layer
+
+# def api_view(request, symbol):
+#     # Fetch data for the symbol and prepare stock_data
+
+#     # Send the stock_data to WebSocket consumers
+#     channel_layer = get_channel_layer()
+#     async_to_sync(channel_layer.group_send)(
+#         f"stock_{symbol}",
+#         {"type": "send_stock_data", "stock_data": stock_data}
+#     )
+
+#     return JsonResponse(stock_data)

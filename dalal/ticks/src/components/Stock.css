@@ -383,7 +383,7 @@ margin-right: 1.5625vw;
 { 
     grid-area: two; 
     height: 135px;
-    width: 280px;
+    /* width: 280px; */
     background-color: #d97156;
     text-align: center;
 }
