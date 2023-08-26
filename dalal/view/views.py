@@ -218,3 +218,6 @@ def index(request, symbol):
 #     )
 
 #     return JsonResponse(stock_data)
+
+
+
