@@ -34,7 +34,7 @@ function View() {
   const arrow = sensexData.change > 0 ? '\u25B2' : '\u25BC';
   useEffect(() => {
     const fetchSensexData = async () => {
-      const response = await fetch('/api/NSE/');
+      const response = await fetch('/api/INFY/');
       const data = await response.json();
       setSensexData(data);
     };

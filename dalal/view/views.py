@@ -172,22 +172,58 @@ import yfinance as yf
 
 
 
+# @api_view(['GET'])
+# def index(request, symbol):
+#     if symbol == '':
+#         return Response({'error': 'Symbol parameter is missing'})
+#     else:
+#         try:
+#             nse_symbol = symbol + '.NS'
+#             # Retrieve stock data using yfinance
+#             stock_data = yf.Ticker(symbol)
+#             stock_info = stock_data.info
+            
+#             # Create a Stock object and save it to the database
+#             stock = Stock(
+#                 symbol=symbol,
+#                 price=stock_info.get('currentPrice', 0),
+#                 change=stock_info.get('regularMarketPreviousClose', 0) - stock_info.get('open', 0),
+#                 pChange=(stock_info.get('currentPrice', 0) - stock_info.get('regularMarketPreviousClose', 0)) / stock_info.get('regularMarketPreviousClose', 1)
+#             )
+#             stock.save()
+            
+#             # Serialize the stock data and return the response
+#             serializer = StockSerializer(stock)
+#             data = serializer.data
+#             return Response(data)
+
+#         except Exception as e:
+#             return Response({'error': str(e)})
+
 @api_view(['GET'])
 def index(request, symbol):
     if symbol == '':
         return Response({'error': 'Symbol parameter is missing'})
     else:
         try:
+            nse_symbol = symbol + '.NS'
             # Retrieve stock data using yfinance
-            stock_data = yf.Ticker(symbol)
+            stock_data = yf.Ticker(nse_symbol)
             stock_info = stock_data.info
+            
+            # Calculate price change and percent change accurately based on the correct keys
+            price = stock_info.get('currentPrice', 0)
+            previous_close = stock_info.get('regularMarketPreviousClose', 0)
+            open_price = stock_info.get('open', 0)
+            change = previous_close - open_price
+            pChange = (price - previous_close) / previous_close * 100
             
             # Create a Stock object and save it to the database
             stock = Stock(
                 symbol=symbol,
-                price=stock_info.get('currentPrice', 0),
-                change=stock_info.get('regularMarketPreviousClose', 0) - stock_info.get('open', 0),
-                pChange=(stock_info.get('currentPrice', 0) - stock_info.get('regularMarketPreviousClose', 0)) / stock_info.get('regularMarketPreviousClose', 1)
+                price=price,
+                change=change,
+                pChange=pChange
             )
             stock.save()
             
@@ -198,6 +234,7 @@ def index(request, symbol):
 
         except Exception as e:
             return Response({'error': str(e)})
+
 
 
 
@@ -221,3 +258,8 @@ def index(request, symbol):
 
 
 
+# import yfinance as yf
+# symbol = "ITC.NS" 
+# stock_data = yf.Ticker(symbol)
+# stock_info = stock_data.info
+# print(stock_info)
